@@ -40,11 +40,12 @@ class MicrophoneModel(nn.Module):
         self.threshold        = nn.Parameter(torch.randn(stft_dim, 1, requires_grad=True))
         self.filter           = nn.Parameter(torch.randn(stft_dim, 1, requires_grad=True))
         self.mic_clip         = nn.Parameter(torch.randn(1, requires_grad=True))
-
+        
     def forward(self, x):
 
-        x_cmplx = torch.stft(x, hop_length=self.hop_length, win_length=self.win_length, n_fft=self.n_fft, return_complex=True)
-        y_1     = self.impulse_response * x_cmplx
+        #x_cmplx = torch.stft(x, hop_length=self.hop_length, win_length=self.win_length, n_fft=self.n_fft, return_complex=True)
+        y_1     = self.impulse_response * x
+        y_1     =  torch.stft(y_1, hop_length=self.hop_length, win_length=self.win_length, n_fft=self.n_fft, return_complex=True)
         y_2     = torch.istft(y_1 * torch.sigmoid(torch.abs(y_1) ** 2 - self.threshold.expand(y_1.size(-2), y_1.size(-1))), n_fft=self.n_fft)
         y_3     = y_2 + torch.istft(torch.stft(torch.randn_like(y_2), hop_length=self.hop_length, win_length=self.win_length, n_fft=self.n_fft, return_complex=True) * self.filter, n_fft=self.n_fft)
         y       = smoothmin(smoothmax(y_3, -self.mic_clip), self.mic_clip)
@@ -62,14 +63,15 @@ if __name__ == '__main__':
         'win_length' : 1024,
         'n_fft'      : 1024,
         'hop_length' : 256,
-        'lr'         : 1e-4,
+        'lr'         : 1e-3,
         'beta1'      : 0.5,
         'beta2'      : 0.9,
     }
 
-    audio            = torch.randn(3, 16384)
-    microphone_model = MicrophoneModel(hparams)
-    audio_mic        = microphone_model(audio)
+    # audio            = torch.randn(3, 16384)
+    # microphone_model = MicrophoneModel(hparams)
+    # audio_mic        = microphone_model(audio)
 
-    print(f'audio out size: {audio_mic.size()}')
-    print('DONE')
+    # print(f'audio out size: {audio_mic.size()}')
+    # print('DONE')
+
