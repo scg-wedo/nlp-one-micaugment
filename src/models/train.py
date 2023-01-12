@@ -24,8 +24,8 @@ import librosa
 
 from microphone import MicrophoneModel
 
-TARGET_WAV_path = "/Users/NATTANAA/Desktop/git/micaugment/data/s1_cut.wav"
-SOURCE_WAV_path = "/Users/NATTANAA/Desktop/git/micaugment/data/s1_iphone_cut.wav"
+TARGET_WAV_path = "../../data/s1_cut.wav"
+SOURCE_WAV_path = "../../data/s1_iphone_cut.wav"
 # metadata = torchaudio.info(SAMPLE_WAV)
 # print(metadata)
 hparams = {
