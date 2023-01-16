@@ -36,18 +36,19 @@ class MicrophoneModel(nn.Module):
 
         stft_dim        = int(self.n_fft / 2) + 1
 
-        self.impulse_response = nn.Parameter(torch.randn(stft_dim, 1, requires_grad=True))
+        self.impulse_response = nn.Conv1d(1, 1, 3, padding ="same") #nn.Parameter(torch.randn(stft_dim, 1, requires_grad=True))
         self.threshold        = nn.Parameter(torch.randn(stft_dim, 1, requires_grad=True))
-        self.filter           = nn.Parameter(torch.randn(stft_dim, 1, requires_grad=True))
+        self.filter           = nn.Conv1d(1, 1, 3, padding ="same") #nn.Parameter(torch.randn(stft_dim, 1, requires_grad=True))
         self.mic_clip         = nn.Parameter(torch.randn(1, requires_grad=True))
         
     def forward(self, x):
 
         #x_cmplx = torch.stft(x, hop_length=self.hop_length, win_length=self.win_length, n_fft=self.n_fft, return_complex=True)
-        y_1     = self.impulse_response * x
+        y_1     = self.impulse_response(x)
         y_1     =  torch.stft(y_1, hop_length=self.hop_length, win_length=self.win_length, n_fft=self.n_fft, return_complex=True)
         y_2     = torch.istft(y_1 * torch.sigmoid(torch.abs(y_1) ** 2 - self.threshold.expand(y_1.size(-2), y_1.size(-1))), n_fft=self.n_fft)
-        y_3     = y_2 + torch.istft(torch.stft(torch.randn_like(y_2), hop_length=self.hop_length, win_length=self.win_length, n_fft=self.n_fft, return_complex=True) * self.filter, n_fft=self.n_fft)
+        #y_3     = y_2 + torch.istft(torch.stft(torch.randn_like(y_2), hop_length=self.hop_length, win_length=self.win_length, n_fft=self.n_fft, return_complex=True) * self.filter, n_fft=self.n_fft)
+        y_3     = y_2 + self.filter(torch.randn_like(y_2))
         y       = smoothmin(smoothmax(y_3, -self.mic_clip), self.mic_clip)
 
         return y

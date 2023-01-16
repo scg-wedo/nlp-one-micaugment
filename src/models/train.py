@@ -112,9 +112,9 @@ for t in range(epochs):
 print("Done!")
 
 #save model
-torch.save(model.state_dict(), "/Users/NATTANAA/Desktop/git/micaugment/src/models/model.pth")
+torch.save(model.state_dict(), "./model.pth")
 model = MicrophoneModel(hparams)
-model.load_state_dict(torch.load("/Users/NATTANAA/Desktop/git/micaugment/src/models/model.pth"))
+model.load_state_dict(torch.load("./model.pth"))
 
 #inferance
 y_aug = model(waveform_S)
