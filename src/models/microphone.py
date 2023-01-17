@@ -41,10 +41,12 @@ class MicrophoneModel(nn.Module):
         self.filter           = nn.Conv1d(1, 1, 3, padding ="same") #nn.Parameter(torch.randn(stft_dim, 1, requires_grad=True))
         self.mic_clip         = nn.Parameter(torch.randn(1, requires_grad=True))
         
-    def forward(self, x):
-
+    def forward(self, x, rir):
+        
+        x = torch.nn.functional.pad(x, (rir.shape[1]-1, 0))
+        rir     = self.impulse_response(rir)
+        y_1 = torch.nn.functional.conv1d(x[None, ...], rir[None, ...])[0]
         #x_cmplx = torch.stft(x, hop_length=self.hop_length, win_length=self.win_length, n_fft=self.n_fft, return_complex=True)
-        y_1     = self.impulse_response(x)
         y_1     =  torch.stft(y_1, hop_length=self.hop_length, win_length=self.win_length, n_fft=self.n_fft, return_complex=True)
         y_2     = torch.istft(y_1 * torch.sigmoid(torch.abs(y_1) ** 2 - self.threshold.expand(y_1.size(-2), y_1.size(-1))), n_fft=self.n_fft)
         #y_3     = y_2 + torch.istft(torch.stft(torch.randn_like(y_2), hop_length=self.hop_length, win_length=self.win_length, n_fft=self.n_fft, return_complex=True) * self.filter, n_fft=self.n_fft)
